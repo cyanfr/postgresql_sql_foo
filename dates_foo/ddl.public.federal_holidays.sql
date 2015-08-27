@@ -1,3 +1,6 @@
+-- script will populate with US Federal holidays.
+-- but allows for others.
+
 drop table if exists
     public.federal_holidays;
 
