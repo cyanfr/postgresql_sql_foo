@@ -1,6 +1,6 @@
 These scripts will generate a table public.date_dim that contains the fields below.
 All expressions are relative to the date found in the full_dt field.
-So for example, prev_full_dt is the date for the date found in the full_dt field.
+So for example, prev_full_dt is the date 1 day prior to the date found in the full_dt field.
 
 date_key                      -- integer representation of date in form YYYYMMDD
 full_dt                       -- just the date
