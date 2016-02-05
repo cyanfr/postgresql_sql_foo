@@ -43,9 +43,9 @@ to_char(j.full_dt,'YYYYMMDD')::int4 as date_key  -- integer not null,  date as 8
 , null::date as fed_next_biz_full_dt  -- date,
 , null::date as fed_prev_biz_full_dt  -- date,
 -- XXXXXXXXXXXXXXXXXXXXX
-, (extract(epoch from date_trunc('day',j.full_dt))::int8)/60/60/24 as unix_days  -- integer,
-, extract(epoch from date_trunc('day',j.full_dt))::int8 as unix_start_secs  -- BIGINT,
-, (extract(epoch from (date_trunc('day',j.full_dt) + interval '1 day'))::int8 - 1) as unix_end_secs  -- BIGINT,
+, (extract(epoch from (j.full_dt::timestamp without time zone - '1970-01-01 00:00:00'))::int8)/60/60/24 as unix_days  -- integer,
+, extract(epoch from (j.full_dt::timestamp without time zone - '1970-01-01 00:00:00'))::int8 as unix_start_secs  -- bigint,
+, (extract(epoch from (j.full_dt::timestamp without time zone - '1970-01-01 00:00:00'))::int8 - 1) as unix_end_secs  -- bigint,
 , (case when to_char(j.full_dt,'D')::int2 in (1,7) then 'N' else 'Y' end)::varchar(1) as weekday_fl  -- character(1),
 -- WEEK_SU_SA_ID
 , (to_char(j.full_dt,'YYYY')||
