@@ -1,7 +1,11 @@
 -- this script requires a table public.federal_holidays.
 -- see ddl.public.federal_holidays.sql for an example ddl and inserts
 
--- also see lines 209 and 210.  Replace <VARIABLE> on each line with an integer.
+-- see line 161.  Replace ${FIRST_DATE} and ${LAST_DATE} on each line with dates in format 'YYYY-MM-DD'.
+-- these represent the first and last dates for which you wish to generate records.
+
+-- see lines 213 and 214.  Replace ${FED_BIZ_DAY_NUM} with an integer.
+-- this represents the ordinal Federal Business Day number of the most recent prior day to the ${FIRST_DATE}.
 
 drop table if exists public.date_dim;
 
@@ -16,7 +20,7 @@ to_char(j.full_dt,'YYYYMMDD')::int4 as date_key  -- integer not null,  date as 8
 , (j.full_dt - interval '60 days')::date as prev_60_full_dt  -- date,
 , (j.full_dt - interval '90 days')::date as prev_90_full_dt  -- date,
 , (j.full_dt - interval '120 days')::date as prev_120_full_dt  -- date,
-, to_char(j.full_dt,'Day')::varchar(10) as day_of_week_name  -- character varying(10),
+, btrim(to_char(j.full_dt,'Day'))::varchar(10) as day_of_week_name  -- character varying(10),
 , to_char(j.full_dt,'ID')::int2 as day_of_week_mo_su_num  -- smallint,
 , to_char(j.full_dt,'D')::int2 as day_of_week_su_sa_num  -- smallint,
 , to_char(j.full_dt,'DD')::int2 as day_of_month_num  -- smallint,
@@ -119,11 +123,11 @@ to_char(j.full_dt,'YYYYMMDD')::int4 as date_key  -- integer not null,  date as 8
 -- date for LAST day of month 12 month ago
 , ((date_trunc('month',j.full_dt) - interval '11 months') - interval '1 day')::date as ldom_12_back_dt  -- date,
 -- Just the month name
-, to_char(j.full_dt,'Month')::varchar(10) as month_name  -- character varying(10),
+, btrim(to_char(j.full_dt,'Month'))::varchar(10) as month_name  -- character varying(10),
 -- Month label in form Mmm-YY
-, ((to_char(j.full_dt,'Mon')||'-'||to_char(j.full_dt,'YY')))::varchar(200) as month_full_short_name  -- character varying(200),
+, btrim(to_char(j.full_dt,'Mon')||'-'||to_char(j.full_dt,'YY'))::varchar(200) as month_full_short_name  -- character varying(200),
 -- Month label in form YYYY Month
-, (to_char(j.full_dt,'YYYY')||' '||to_char(j.full_dt,'Month'))::varchar(200) as month_full_long_name  -- character varying(200),
+, btrim(to_char(j.full_dt,'YYYY')||' '||to_char(j.full_dt,'Month'))::varchar(200) as month_full_long_name  -- character varying(200),
 -- number of month 1 to 12
 , to_char(j.full_dt,'MM')::int2 as month_num  -- smallint,
 -- number of previous month
@@ -155,7 +159,7 @@ to_char(j.full_dt,'YYYYMMDD')::int4 as date_key  -- integer not null,  date as 8
 -- comment out line 158 and uncomment line 156 to create the table with 5 years of data starting with Jan 1, 2016 and going through end of year 2020.
 --from (select (generate_series('2016-01-01', (('2016-01-01'::date + interval '5 years') - interval '1 day'), '1 day'::interval))::date as full_dt) j
 -- to change the date ranges created in this table, change the start enad end dates in the line below.
-from (select (generate_series('2016-01-01', '2017-12-31', '1 day'::interval))::date as full_dt) j
+from (select (generate_series('${FIRST_DATE}', '${LAST_DATE}', '1 day'::interval))::date as full_dt) j
 left join public.federal_holidays f
 on j.full_dt = f.holiday_date;
 
@@ -206,8 +210,8 @@ select d.full_dt
 , to_char(d.full_dt,'DDD')::int2 as day_of_year_num
 , d.day_of_week_name
 , d.fed_business_day_fl
-, (<VARIABLE> + (sum(case when fed_business_day_fl = 'Y' then 1::int4 else 0::int4 end) over (order by full_dt)))::int4 as fed_business_day_num
-, (<VARIABLE> + (sum(case when fed_business_day_fl = 'Y' then 1::int4 else 0::int4 end) over (order by full_dt))-1)::int4 as prev_fed_business_day_num
+, (${FED_BIZ_DAY_NUM} + (sum(case when fed_business_day_fl = 'Y' then 1::int4 else 0::int4 end) over (order by full_dt)))::int4 as fed_business_day_num
+, (${FED_BIZ_DAY_NUM} + (sum(case when fed_business_day_fl = 'Y' then 1::int4 else 0::int4 end) over (order by full_dt))-1)::int4 as prev_fed_business_day_num
 , case when d.fed_business_day_fl = 'Y' then
   'Y'||((sum(case when fed_business_day_fl = 'N' then 1::int4 else 0::int4 end) over (order by full_dt)))
    else 'N'||((sum(case when fed_business_day_fl = 'Y' then 1::int4 else 0::int4 end) over (order by full_dt)))
