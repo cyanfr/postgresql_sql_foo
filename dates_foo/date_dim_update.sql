@@ -1,7 +1,7 @@
 -- this script requires a table public.federal_holidays.
 -- see ddl.public.federal_holidays.sql for an example ddl and inserts
 
--- see line 161.  Replace ${FIRST_DATE} and ${LAST_DATE} on each line with dates in format 'YYYY-MM-DD'.
+-- see line 162.  Replace ${FIRST_DATE} and ${LAST_DATE} on each line with dates in format 'YYYY-MM-DD'.
 -- these represent the first and last dates for which you wish to generate records.
 
 -- see lines 213 and 214.  Replace ${FED_BIZ_DAY_NUM} with an integer.
@@ -132,14 +132,14 @@ to_char(j.full_dt,'YYYYMMDD')::int4 as date_key  -- integer not null,  date as 8
 , to_char(j.full_dt,'MM')::int2 as month_num  -- smallint,
 -- number of previous month
 , to_char((date_trunc('month',j.full_dt) - interval '1 day'), 'MM')::int2 as prev_month_num  -- smallint,
-, (to_char(((date_trunc('month',j.full_dt) + interval '1 month') - interval '1 day'),'DD')::int2) as number_of_days_in_month  -- smallint,
+, to_char(((date_trunc('month',j.full_dt) + interval '1 month') - interval '1 day'),'DD')::int2 as number_of_days_in_month  -- smallint,
 -- quarter id in form YYYYQ
 , (to_char(j.full_dt,'YYYY')||to_char(j.full_dt,'Q'))::int4 as quarter_id  -- integer,
 -- just number of quarter 1 to 4.
 , to_char(j.full_dt,'Q')::int2 as quarter_num  -- smallint,
 , (to_char(j.full_dt,'Q')::int2 - 1) as prev_quarter_num  -- smallint,
 -- label of quarter in form YYYY Q#. eg 2016 Q1
-, ((to_char(j.full_dt,'YYYY')||' Q'||to_char(j.full_dt,'Q')))::varchar(26) as quarter_full_name  -- character varying(26),
+, (to_char(j.full_dt,'YYYY')||' Q'||to_char(j.full_dt,'Q'))::varchar(26) as quarter_full_name  -- character varying(26),
 , (EXTRACT(EPOCH FROM ((date_trunc('quarter',j.full_dt) + interval '3 months')
                        - date_trunc('quarter',j.full_dt)))/60/60/24)::int2 as number_of_days_in_quarter  -- smallint,
 , to_char(j.full_dt,'YYYY')::integer as year  -- integer,
